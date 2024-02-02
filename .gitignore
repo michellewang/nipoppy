@@ -25,3 +25,6 @@ workflow/proc_pipe/fmriprep/scripts/fmriprep_slurm.sh
 *.out
 *.log
 env/
+
+# VS Code
+.vscode

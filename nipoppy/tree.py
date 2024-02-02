@@ -4,7 +4,7 @@ from pathlib import Path
 import argparse
 
 # Globals
-dir_tree_json = "tree.json"
+DIR_TREE_JSON = Path(__file__).parent / "tree.json" # relative to the current file
 
 def get_paths(k,v):
     subdirs = v["subdirs"]
@@ -19,7 +19,7 @@ def get_paths(k,v):
     return path_list
 
 
-def run(nipoppy_root, dir_tree_json="tree.json"):
+def run(nipoppy_root, dir_tree_json=DIR_TREE_JSON):
     print("-"*50)
     print(f"Reading {dir_tree_json} to generate list of dir paths")
     path_list = []
@@ -45,11 +45,11 @@ if __name__ == '__main__':
     """
     parser = argparse.ArgumentParser(description=HELPTEXT)
     parser.add_argument('--nipoppy_root', type=str, required=True, help='path to nipoppy_root dir')
-    parser.add_argument('--dir_tree_json', type=str, default="tree.json", help='path to dir tree')
+    parser.add_argument('--dir_tree_json', type=str, default=DIR_TREE_JSON, help='path to dir tree')
     args = parser.parse_args()
 
     nipoppy_root = args.nipoppy_root
-    dir_tree_json = args.dir_tree_json
+    DIR_TREE_JSON = args.dir_tree_json
 
-    run(nipoppy_root, dir_tree_json)
+    run(nipoppy_root, DIR_TREE_JSON)
 

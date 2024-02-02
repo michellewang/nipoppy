@@ -128,7 +128,7 @@ def run(participant_id: str,
     if output_dir is None:
         output_dir = f"{DATASET_ROOT}/derivatives/"
 
-    bids_dir = f"{DATASET_ROOT}/bids/"
+    bids_dir = f"{DATASET_ROOT}/rawdata/"
     proc_dir = f"{DATASET_ROOT}/proc/"
     fmriprep_dir = f"{output_dir}/fmriprep/{FMRIPREP_VERSION}"
 

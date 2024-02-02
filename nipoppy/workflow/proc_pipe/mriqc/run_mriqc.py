@@ -19,7 +19,7 @@ def run(participant_id, global_configs, session_id, output_dir, modalities, bids
     MRIQC_CONTAINER = MRIQC_CONTAINER.format(MRIQC_VERSION)
     SINGULARITY_CONTAINER = f"{CONTAINER_STORE}{MRIQC_CONTAINER}"
 
-    bids_dir = f"{DATASET_ROOT}/bids/"
+    bids_dir = f"{DATASET_ROOT}/rawdata/"
     proc_dir = f"{DATASET_ROOT}/proc/"
 
     # logging

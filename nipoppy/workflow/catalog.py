@@ -198,7 +198,7 @@ def generate_pybids_index(global_configs, session_id, pipeline, ignore_patterns,
         You can pass a list of folder names, or a regex pattern to the ignore argument.
     """
     DATASET_ROOT = global_configs["DATASET_ROOT"]
-    bids_dir = f"{DATASET_ROOT}/bids"
+    bids_dir = f"{DATASET_ROOT}/rawdata"
 
     if bids_db_path == None:
         bids_db_path = f"{DATASET_ROOT}/proc/bids_db_{pipeline}"

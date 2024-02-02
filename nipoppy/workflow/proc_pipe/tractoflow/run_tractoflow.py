@@ -444,7 +444,7 @@ def run(participant_id, global_configs, session_id, output_dir, use_bids_filter,
         output_dir = f"{DATASET_ROOT}/derivatives"
 
     ## build paths to files
-    bids_dir = f"{DATASET_ROOT}/bids"
+    bids_dir = f"{DATASET_ROOT}/rawdata"
     tractoflow_dir = f"{output_dir}/tractoflow/{TRACTOFLOW_VERSION}"
 
     ## Copy bids_filter.json 

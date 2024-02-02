@@ -78,7 +78,7 @@ def run(global_configs, dash_schema_file, pipelines, session_id="ALL", run_id="1
     )
 
     # for bids tracker
-    bids_dir = f"{DATASET_ROOT}/bids/"
+    bids_dir = f"{DATASET_ROOT}/rawdata/"
     
     # logging
     log_dir = f"{DATASET_ROOT}/scratch/logs/"

@@ -41,7 +41,7 @@ def run_heudiconv(dicom_id, global_configs, session_id, stage, overlays, logger)
     SINGULARITY_HEUDICONV = f"{CONTAINER_STORE}/{HEUDICONV_CONTAINER}"
     SINGULARITY_WD = "/scratch"
     SINGULARITY_DICOM_DIR = f"{SINGULARITY_WD}/sourcedata/ses-{session_id}"
-    SINGULARITY_BIDS_DIR = f"{SINGULARITY_WD}/bids"
+    SINGULARITY_BIDS_DIR = f"{SINGULARITY_WD}/rawdata"
     HEURISTIC_FILE=f"{SINGULARITY_WD}/proc/heuristic.py"
 
     logger.info(f"Using SINGULARITY_HEUDICONV: {SINGULARITY_HEUDICONV}")
@@ -54,7 +54,7 @@ def run_heudiconv(dicom_id, global_configs, session_id, stage, overlays, logger)
         for overlay in overlays:
             flag_overlay += f'--overlay {overlay} '
 
-        for dname in ['bids', 'tabular', 'proc']:
+        for dname in ['rawdata', 'tabular', 'proc']:
             flag_bind += f'--bind {DATASET_ROOT}/{dname}:{SINGULARITY_WD}/{dname} '
     else:
         flag_bind = f'--bind {DATASET_ROOT}:{SINGULARITY_WD}'
@@ -119,7 +119,7 @@ def run(global_configs, session_id, stage=2, overlays=None, n_jobs=2, dicom_id=N
     logger.info(f"Number of parallel jobs: {n_jobs}")
 
     fpath_doughnut = Path(DATASET_ROOT, 'scratch', 'raw_dicom', FNAME_DOUGHNUT)
-    bids_dir = f"{DATASET_ROOT}/bids/"
+    bids_dir = f"{DATASET_ROOT}/rawdata/"
 
     df_doughnut = load_doughnut(fpath_doughnut)
 

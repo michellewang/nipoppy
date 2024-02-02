@@ -15,6 +15,6 @@ def global_config_for_testing(pth: Path) -> dict:
 
     global_configs["DATASET_ROOT"] = str(pth)
 
-    (pth / "bids").mkdir(parents=True, exist_ok=True)
+    (pth / "rawdata").mkdir(parents=True, exist_ok=True)
 
     return global_configs

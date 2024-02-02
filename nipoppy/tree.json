@@ -50,14 +50,14 @@
         
     },
 
-    "dicom":{
-        "description": "",
+    "sourcedata":{
+        "description": "Organized raw DICOM files",
         "files": [],
         "subdirs": {}
     },
 
-    "bids":{
-        "description": "",
+    "rawdata":{
+        "description": "NIfTI files in BIDS format",
         "files": [],
         "subdirs": {}
     },

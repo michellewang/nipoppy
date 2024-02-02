@@ -40,7 +40,7 @@ def run_heudiconv(dicom_id, global_configs, session_id, stage, overlays, logger)
     HEUDICONV_CONTAINER = HEUDICONV_CONTAINER.format(HEUDICONV_VERSION)
     SINGULARITY_HEUDICONV = f"{CONTAINER_STORE}/{HEUDICONV_CONTAINER}"
     SINGULARITY_WD = "/scratch"
-    SINGULARITY_DICOM_DIR = f"{SINGULARITY_WD}/dicom/ses-{session_id}"
+    SINGULARITY_DICOM_DIR = f"{SINGULARITY_WD}/sourcedata/ses-{session_id}"
     SINGULARITY_BIDS_DIR = f"{SINGULARITY_WD}/bids"
     HEURISTIC_FILE=f"{SINGULARITY_WD}/proc/heuristic.py"
 

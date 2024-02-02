@@ -62,7 +62,7 @@ def run(global_configs, session_id, logger=None, use_symlinks=True, skip_dcm_che
     # populate relative paths
     DATASET_ROOT = global_configs["DATASET_ROOT"]
     raw_dicom_dir = f"{DATASET_ROOT}/scratch/raw_dicom/{session}/"
-    dicom_dir = f"{DATASET_ROOT}/dicom/{session}/"
+    dicom_dir = f"{DATASET_ROOT}/sourcedata/{session}/"
     log_dir = f"{DATASET_ROOT}/scratch/logs/"
     invalid_dicom_dir = f"{log_dir}/invalid_dicom_dir/"
 

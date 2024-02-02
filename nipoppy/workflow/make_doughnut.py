@@ -45,7 +45,7 @@ def run(global_config: dict, regenerate=False, empty=False):
 
     # generate DICOM/BIDS directory paths
     dpath_downloaded_dicom = dpath_dataset / 'scratch' / 'raw_dicom'
-    dpath_organized_dicom = dpath_dataset / 'dicom'
+    dpath_organized_dicom = dpath_dataset / 'sourcedata'
     dpath_converted = dpath_dataset / 'bids'
 
     # get path to doughnut file

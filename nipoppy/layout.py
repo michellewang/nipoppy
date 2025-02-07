@@ -323,12 +323,21 @@ class DatasetLayout(Base):
         )
         return self.dpath_pybids_db / dname
 
-    def get_dpath_pipeline_config(
+    def get_dpath_pipeline_bundle(
         self, pipeline_name: str, pipeline_version: str
     ) -> Path:
         """Return the path to a pipeline's configuration directory."""
         return self.dpath_pipelines / get_pipeline_tag(
             pipeline_name=pipeline_name, pipeline_version=pipeline_version
+        )
+
+    def get_fpath_pipeline_config(
+        self, pipeline_name: str, pipeline_version: str
+    ) -> Path:
+        """Return the path to a pipeline's configuration file."""
+        return (
+            self.get_dpath_pipeline_bundle(pipeline_name, pipeline_version)
+            / self.fname_pipeline_config
         )
 
 

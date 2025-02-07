@@ -148,14 +148,21 @@ class BasePipelineWorkflow(BaseWorkflow, ABC):
         )
 
     @cached_property
-    def _pipeline_configs(self) -> list[ProcPipelineConfig]:
-        return self.config.PROC_PIPELINES
-
-    @cached_property
     def pipeline_config(self) -> ProcPipelineConfig:
         """Get the user config for the pipeline."""
-        return get_pipeline_config(
-            self.pipeline_name, self.pipeline_version, self._pipeline_configs
+        return self.config.propagate_container_config_to_pipeline(
+            ProcPipelineConfig(
+                **self.config.apply_substitutions_to_json(
+                    self.process_template_json(
+                        load_json(
+                            self.layout.get_fpath_pipeline_config(
+                                self.pipeline_name, self.pipeline_version
+                            )
+                        ),
+                        objs=[self, self.layout],
+                    )
+                )
+            )
         )
 
     @cached_property
@@ -274,8 +281,8 @@ class BasePipelineWorkflow(BaseWorkflow, ABC):
     def process_template_json(
         self,
         template_json: dict,
-        participant_id: Optional[str],
-        session_id: Optional[str],
+        participant_id: Optional[str] = None,
+        session_id: Optional[str] = None,
         bids_participant_id: Optional[str] = None,
         bids_session_id: Optional[str] = None,
         objs: Optional[list] = None,

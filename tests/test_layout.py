@@ -325,7 +325,7 @@ def test_get_fpath_pipeline_config(
 ):
     layout = DatasetLayout(dpath_root=dpath_root)
     assert (
-        layout.get_dpath_pipeline_config(pipeline_name, pipeline_version)
+        layout.get_dpath_pipeline_bundle(pipeline_name, pipeline_version)
         == dpath_root / expected
     )
 

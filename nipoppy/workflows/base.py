@@ -142,6 +142,8 @@ class BaseWorkflow(Base, ABC):
                     msg=f"{log_prefix} {line}",
                     extra={"markup": False},
                 )
+                for handler in self.logger.handlers:
+                    handler.flush()
 
         # build command string
         if not isinstance(command_or_args, str):
@@ -323,8 +325,6 @@ class BaseWorkflow(Base, ABC):
                 )
             )
         )
-
-        config.propagate_container_config()
 
         return config
 

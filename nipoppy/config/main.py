@@ -120,15 +120,15 @@ class Config(_SchemaWithContainerConfig):
             "is loaded from a file with :func:`nipoppy.config.main.Config.load`"
         ),
     )
-    BIDS_PIPELINES: list[BidsPipelineConfig] = Field(
-        default=[], description="Configurations for BIDS conversion, if applicable"
-    )
-    PROC_PIPELINES: list[ProcPipelineConfig] = Field(
-        description="Configurations for processing pipelines"
-    )
-    EXTRACTION_PIPELINES: list[ExtractionPipelineConfig] = Field(
-        default=[], description="Configurations for extraction pipelines"
-    )
+    # BIDS_PIPELINES: list[BidsPipelineConfig] = Field(
+    #     default=[], description="Configurations for BIDS conversion, if applicable"
+    # )
+    # PROC_PIPELINES: list[ProcPipelineConfig] = Field(
+    #     default=[], description="Configurations for processing pipelines"
+    # )
+    # EXTRACTION_PIPELINES: list[ExtractionPipelineConfig] = Field(
+    #     default=[], description="Configurations for extraction pipelines"
+    # )
     CUSTOM: dict = Field(
         default={},
         description="Free field that can be used for any purpose",
@@ -150,28 +150,23 @@ class Config(_SchemaWithContainerConfig):
 
         return self
 
-    def propagate_container_config(self) -> Self:
-        """Propagate the container config to all pipelines."""
+    def propagate_container_config_to_pipeline(
+        self, pipeline_config: BasePipelineConfig
+    ) -> BasePipelineConfig:
+        """Propagate the global container config to a pipeline config."""
 
-        def _propagate(pipeline_configs: list[BasePipelineConfig]):
-            for pipeline_config in pipeline_configs:
-                pipeline_container_config = pipeline_config.get_container_config()
-                if pipeline_container_config.INHERIT:
-                    pipeline_container_config.merge(
-                        self.CONTAINER_CONFIG, overwrite_command=True
-                    )
-                for pipeline_step in pipeline_config.STEPS:
-                    step_container_config = pipeline_step.get_container_config()
-                    if step_container_config.INHERIT:
-                        step_container_config.merge(
-                            pipeline_container_config, overwrite_command=True
-                        )
-
-        _propagate(self.BIDS_PIPELINES)
-        _propagate(self.PROC_PIPELINES)
-        _propagate(self.EXTRACTION_PIPELINES)
-
-        return self
+        pipeline_container_config = pipeline_config.get_container_config()
+        if pipeline_container_config.INHERIT:
+            pipeline_container_config.merge(
+                self.CONTAINER_CONFIG, overwrite_command=True
+            )
+        for pipeline_step in pipeline_config.STEPS:
+            step_container_config = pipeline_step.get_container_config()
+            if step_container_config.INHERIT:
+                step_container_config.merge(
+                    pipeline_container_config, overwrite_command=True
+                )
+        return pipeline_config
 
     @model_validator(mode="before")
     @classmethod
@@ -216,7 +211,11 @@ class Config(_SchemaWithContainerConfig):
         return apply_substitutions_to_json(json_obj, self.SUBSTITUTIONS)
 
     @classmethod
-    def load(cls, path: StrOrPathLike, apply_substitutions=True) -> Self:
+    def load(
+        cls,
+        path: StrOrPathLike,
+        apply_substitutions=True,
+    ) -> Self:
         """Load a dataset configuration from a file."""
         substitutions_key = "SUBSTITUTIONS"
         config_dict = load_json(path)

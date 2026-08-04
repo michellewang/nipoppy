@@ -16,6 +16,8 @@ updates:
       prefix: "[MAINT] "
   - package-ecosystem: "pip"
     directory: "/" # Location of package manifests
+    cooldown:
+      default-days: 1
     allow:
       - dependency-name: "furo"
       - dependency-name: "mdit-py-plugins"

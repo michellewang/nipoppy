@@ -50,7 +50,7 @@ doc = [
     "sphinx-jsonschema==1.19.2",
     "sphinx-togglebutton==0.4.5",
     "sphinx_design==0.6.1",
-    "Sphinx-Substitution-Extensions==2025.12.15",
+    "Sphinx-Substitution-Extensions==2026.1.12",
 ]
 dev = ["nipoppy[doc,test]", "pre-commit"]
 test = [

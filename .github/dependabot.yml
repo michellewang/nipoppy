@@ -23,7 +23,7 @@ updates:
       - dependency-name: "sphinx*"
       - dependency-name: "sphinx*"
     schedule:
-      interval: "monthly"
+      interval: "daily"
     labels:
       - "T.2 - Maintenance"
       - "bot"

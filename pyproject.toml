@@ -41,7 +41,7 @@ parallel = ["joblib"]
 doc = [
     "furo==2025.12.19",
     "mdit-py-plugins==0.6.1",
-    "myst-parser==4.0.1",
+    "myst-parser==4.0.0",
     "sphinx==8.1.3",
     "sphinx-autoapi==3.8.0",
     "sphinx-click==6.2.0",
@@ -50,7 +50,7 @@ doc = [
     "sphinx-jsonschema==1.19.2",
     "sphinx-togglebutton==0.4.5",
     "sphinx_design==0.6.1",
-    "Sphinx-Substitution-Extensions==2026.1.12",
+    "Sphinx-Substitution-Extensions==2025.12.15",
 ]
 dev = ["nipoppy[doc,test]", "pre-commit"]
 test = [

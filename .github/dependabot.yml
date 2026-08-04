@@ -23,7 +23,7 @@ updates:
       - dependency-name: "mdit-py-plugins"
       - dependency-name: "myst-parser"
       - dependency-name: "sphinx*"
-      - dependency-name: "sphinx*"
+      - dependency-name: "Sphinx*"
     versioning-strategy: increase
     schedule:
       interval: "daily"

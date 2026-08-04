@@ -39,20 +39,20 @@ dynamic = ["version"]
 [project.optional-dependencies]
 parallel = ["joblib"]
 doc = [
-    "furo",
-    "mdit-py-plugins",
+    "furo==2025.12.19",
+    "mdit-py-plugins==0.6.1",
     # Simplify after dropping Python 3.10 support
     "myst-parser>=5.1.0 ; python_version >= '3.11'",
-    "myst-parser ; python_version < '3.11'",
-    "sphinx",
-    "sphinx-autoapi",
-    "sphinx-click",
-    "sphinx-copybutton",
-    "sphinx-github-changelog",
-    "sphinx-jsonschema",
-    "sphinx-togglebutton",
-    "sphinx_design",
-    "Sphinx-Substitution-Extensions",
+    "myst-parser==5.1.0 ; python_version < '3.11'",
+    "sphinx==9.1.0 ; python_version < '3.12'",
+    "sphinx-autoapi==3.8.0",
+    "sphinx-click==6.2.0",
+    "sphinx-copybutton==0.5.2",
+    "sphinx-github-changelog==2.3.0",
+    "sphinx-jsonschema==1.19.2",
+    "sphinx-togglebutton==0.4.5",
+    "sphinx_design==0.7.0",
+    "Sphinx-Substitution-Extensions==2026.6.17",
 ]
 dev = ["nipoppy[doc,test]", "pre-commit"]
 test = [

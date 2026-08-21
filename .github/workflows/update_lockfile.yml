@@ -28,4 +28,5 @@ jobs:
           title: '[MAINT] Update lockfile'
           labels: 'T.2 - Maintenance,bot'
           commit-message: '[MAINT] Update lockfile'
+          token: ${{ secrets.TOKEN_TMP }}
           # token: $${{ steps.generate-token.outputs.token }}

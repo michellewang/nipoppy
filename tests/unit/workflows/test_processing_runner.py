@@ -540,6 +540,30 @@ def test_get_participants_sessions_to_run(
     ] == expected
 
 
+@pytest.mark.parametrize(
+    "tar, extra_flags",
+    [
+        (True, ["--tar"]),
+        (False, None),
+    ],
+)
+def test_generate_cli_command_for_hpc(
+    tar: bool,
+    extra_flags: list[str] | None,
+    runner: ProcessingRunner,
+    mocker: pytest_mock.MockFixture,
+):
+    mocked_generate_cli_command = mocker.patch.object(
+        runner.hpc_runner,
+        "generate_cli_command",
+    )
+    runner.tar = tar
+    runner._generate_cli_command_for_hpc("p01", "s01")
+    mocked_generate_cli_command.assert_called_once_with(
+        participant_id="p01", session_id="s01", extra_flags=extra_flags
+    )
+
+
 def test_run_multiple(runner: ProcessingRunner):
     participant_id = None
     session_id = None

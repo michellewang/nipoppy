@@ -18,7 +18,6 @@ from nipoppy.env import ContainerCommandEnum
 from nipoppy.exceptions import ConfigError
 from nipoppy.pipeline_validation import check_pipeline_bundle
 from nipoppy.utils.utils import get_pipeline_tag
-from nipoppy.workflows.processing_runner import ProcessingRunner
 from nipoppy.workflows.runner import Runner
 from tests.conftest import (
     _set_up_substitution_testing,
@@ -31,7 +30,19 @@ from tests.conftest import (
 
 @pytest.fixture(scope="function")
 def runner(study, tmp_path: Path, mocker: pytest_mock.MockFixture) -> Runner:
-    runner = ProcessingRunner(
+
+    class TestRunner(Runner):
+        def get_participants_sessions_to_run(
+            self, participant_id: str | None, session_id: str | None
+        ):
+            return [("01", "1"), ("01", "2"), ("01", "3"), ("02", "1")]
+
+        def run_single(self, participant_id: str, session_id: str):
+            return f"Ran for {participant_id}, {session_id}"
+
+    runner = TestRunner(
+        name="test",
+        subcommand="test",
         dpath_root=study.layout.dpath_root,
         pipeline_name="dummy_pipeline",
         pipeline_version="1.0.0",
@@ -258,16 +269,7 @@ def test_run_main_hpc(mocker: pytest_mock.MockFixture, runner: Runner):
     ]
 
 
-@pytest.mark.parametrize(
-    "tar, extra_flags",
-    [
-        (True, ["--tar"]),
-        (False, None),
-    ],
-)
 def test_generate_cli_command_for_hpc(
-    tar: bool,
-    extra_flags: list[str] | None,
     runner: Runner,
     mocker: pytest_mock.MockFixture,
 ):
@@ -275,10 +277,9 @@ def test_generate_cli_command_for_hpc(
         runner.hpc_runner,
         "generate_cli_command",
     )
-    runner.tar = tar
     runner._generate_cli_command_for_hpc("p01", "s01")
     mocked_generate_cli_command.assert_called_once_with(
-        participant_id="p01", session_id="s01", extra_flags=extra_flags
+        participant_id="p01", session_id="s01"
     )
 
 

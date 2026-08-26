@@ -25,12 +25,17 @@ def workflow(tmp_path: Path) -> BIDSificationRunner:
     )
     workflow.study.config = get_config()
     create_empty_dataset(workflow.dpath_root)
+    container_image_path = tmp_path / "container.sif"
+    container_image_path.touch()
     create_pipeline_config_files(
         workflow.study.layout.dpath_pipelines,
         bidsification_pipelines=[
             {
                 "NAME": "heudiconv",
                 "VERSION": "0.12.2",
+                "CONTAINER_INFO": {
+                    "FILE": str(container_image_path),
+                },
                 "STEPS": [
                     {"NAME": "prepare"},
                     {"NAME": "convert", "UPDATE_STATUS": True},

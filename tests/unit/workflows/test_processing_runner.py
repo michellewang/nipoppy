@@ -16,7 +16,6 @@ from nipoppy.exceptions import (
     WorkflowError,
 )
 from nipoppy.tabular.curation_status import CurationStatusTable
-from nipoppy.tabular.manifest import Manifest
 from nipoppy.tabular.processing_status import ProcessingStatusTable
 from nipoppy.workflows.processing_runner import (
     ProcessingRunner,
@@ -705,16 +704,6 @@ def test_run_single_tar(
         )
     else:
         mocked_tar_directory.assert_not_called()
-
-
-def test_run_missing_container_raises_error(runner: ProcessingRunner):
-    runner.study.manifest = Manifest()
-
-    runner.pipeline_config.CONTAINER_INFO.FILE = Path("does_not_exist.sif")
-    with pytest.raises(
-        FileOperationError, match="No container image file found for pipeline"
-    ):
-        runner.run()
 
 
 def test_run_main_write_subcohort(

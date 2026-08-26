@@ -154,6 +154,31 @@ def test_run_setup_validates_pipeline_bundle(
     )
 
 
+def test_run_setup_checks_execution_prerequisites(
+    runner: Runner, mocker: pytest_mock.MockFixture
+):
+    container_handler = ApptainerHandler()
+    mocked_get_container_handler = mocker.patch(
+        "nipoppy.workflows.runner.get_container_handler",
+        return_value=container_handler,
+    )
+    mocked_check_execution_prerequisites = mocker.patch.object(
+        container_handler, "check_execution_prerequisites"
+    )
+
+    runner.run_setup()
+
+    mocked_get_container_handler.assert_called_once_with(
+        runner.pipeline_step_config.CONTAINER_CONFIG
+    )
+    mocked_check_execution_prerequisites.assert_called_once_with(
+        pipeline_name=runner.pipeline_name,
+        pipeline_version=runner.pipeline_version,
+        uri=runner.pipeline_config.CONTAINER_INFO.URI,
+        fpath_container=runner.pipeline_config.CONTAINER_INFO.FILE,
+    )
+
+
 def test_run_validation_error_prevents_execution(
     runner: Runner, mocker: pytest_mock.MockFixture
 ):

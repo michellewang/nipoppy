@@ -29,7 +29,6 @@ from nipoppy.config.pipeline import (
 from nipoppy.config.pipeline_step import AnalysisLevelType, ProcPipelineStepConfig
 from nipoppy.config.tracker import TrackerConfig
 from nipoppy.console import _INDENT, CONSOLE_STDOUT
-from nipoppy.container import get_container_handler
 from nipoppy.env import (
     BIDS_SESSION_PREFIX,
     BIDS_SUBJECT_PREFIX,
@@ -39,7 +38,6 @@ from nipoppy.env import (
 )
 from nipoppy.exceptions import (
     ConfigError,
-    ContainerError,
     FileOperationError,
     ReturnCode,
     WorkflowError,
@@ -277,34 +275,7 @@ class BasePipelineWorkflow(BaseDatasetWorkflow, ABC):
     @cached_property
     def fpath_container(self) -> Path:
         """Return the full path to the pipeline's container."""
-        uri = self.pipeline_config.CONTAINER_INFO.URI
-        fpath_container = self.pipeline_config.CONTAINER_INFO.FILE
-        container_handler = get_container_handler(
-            self.pipeline_step_config.CONTAINER_CONFIG,
-        )
-
-        try:
-            is_downloaded = container_handler.is_image_downloaded(uri, fpath_container)
-        except ContainerError as e:
-            raise WorkflowError(
-                f"Error in container config for pipeline {self.pipeline_name} "
-                f"{self.pipeline_version}: {e}"
-            ) from e
-
-        if not is_downloaded:
-            error_message = (
-                f"No container image file found for pipeline"
-                f" {self.pipeline_name} {self.pipeline_version}"
-            )
-            if uri is not None:
-                pull_command = container_handler.get_pull_command(uri, fpath_container)
-                error_message += (
-                    ". This file can be downloaded to the appropriate path by running "
-                    f"the following command:\n\n{pull_command}"
-                )
-            raise FileOperationError(error_message)
-
-        return fpath_container
+        return self.pipeline_config.CONTAINER_INFO.FILE
 
     @cached_property
     def descriptor(self) -> dict:

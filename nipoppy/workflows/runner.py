@@ -51,7 +51,18 @@ class Runner(BasePipelineWorkflow, ABC):
     def run_setup(self):
         """Run pipeline setup and validate the pipeline bundle."""
         to_return = super().run_setup()
+
         check_pipeline_bundle(self.dpath_pipeline_bundle, strict=False)
+
+        container_handler = get_container_handler(
+            self.pipeline_step_config.CONTAINER_CONFIG,
+        )
+        container_handler.check_execution_prerequisites(
+            pipeline_name=self.pipeline_name,
+            pipeline_version=self.pipeline_version,
+            uri=self.pipeline_config.CONTAINER_INFO.URI,
+            fpath_container=self.pipeline_config.CONTAINER_INFO.FILE,
+        )
         return to_return
 
     @cached_property

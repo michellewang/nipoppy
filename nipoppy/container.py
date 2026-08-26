@@ -9,12 +9,14 @@ import subprocess
 from abc import ABC, abstractmethod
 from collections.abc import Iterable
 from pathlib import Path
+from typing import override
 
 from nipoppy.base import Base
 from nipoppy.config.container import ContainerConfig
 from nipoppy.env import ContainerCommandEnum, StrOrPathLike
-from nipoppy.exceptions import ContainerError
+from nipoppy.exceptions import ContainerError, FileOperationError
 from nipoppy.logger import get_logger
+from nipoppy.workflows.base import _run_command
 
 BIND_SEP = ":"
 
@@ -30,15 +32,13 @@ class ContainerHandler(Base, ABC):
     @abstractmethod
     def command(self) -> str:
         """Container executable name."""
-        pass
 
     @property
     @abstractmethod
     def bind_flags(self) -> tuple[str]:
         """Flag for binding paths."""
-        pass
 
-    def __init__(self, args: Iterable[str] = None):
+    def __init__(self, args: Iterable[str] | None = None):
         super().__init__()
 
         if args is None:
@@ -226,6 +226,29 @@ class ContainerHandler(Base, ABC):
             The command string
         """
 
+    def check_execution_prerequisites(
+        self,
+        pipeline_name: str,
+        pipeline_version: str,
+        uri: str | None,
+        fpath_container: StrOrPathLike | None,
+    ):
+        """Check that conditions for executing the container are met."""
+        if self.is_image_downloaded(uri, fpath_container):
+            return
+
+        error_message = (
+            f"No container image file found for pipeline"
+            f" {pipeline_name} {pipeline_version}"
+        )
+        if uri is not None:
+            pull_command = self.get_pull_command(uri, fpath_container)
+            error_message += (
+                ". This file can be downloaded to the appropriate path by running "
+                f"the following command:\n\n{pull_command}"
+            )
+        raise FileOperationError(error_message)
+
 
 class ApptainerHandler(ContainerHandler):
     """Container handler for Apptainer."""
@@ -385,6 +408,7 @@ class BareMetalHandler(ContainerHandler):
     command = NotImplemented
     bind_flags = NotImplemented
 
+    @override
     def add_bind_arg(
         self,
         path_src: StrOrPathLike,
@@ -396,8 +420,8 @@ class BareMetalHandler(ContainerHandler):
 
         Does not do anything since this is bare metal execution.
         """
-        pass
 
+    @override
     def add_env_arg(self, key: str, value: str):
         """Set environment variable."""
         os.environ[key] = value
@@ -424,6 +448,47 @@ class BareMetalHandler(ContainerHandler):
         raise NotImplementedError(
             f"{self.__class__.__name__} does not support pulling container images"
         )
+
+    @override
+    def check_execution_prerequisites(
+        self,
+        pipeline_name: str,
+        pipeline_version: str,
+        uri: str | None,
+        fpath_container: StrOrPathLike | None,
+    ):
+        """Passthrough."""
+
+
+class LmodHandler(BareMetalHandler):
+    """Handler for bare metal execution with lmod (no explicit container)."""
+
+    @override
+    def check_execution_prerequisites(
+        self,
+        pipeline_name: str,
+        pipeline_version: str,
+        uri: str | None,
+        fpath_container: StrOrPathLike | None,
+    ):
+        """Attempt to load the module associated with the module."""
+        if not shutil.which("module"):
+            raise ContainerError(
+                "Lmod is not available on this system."
+                " Make sure it is installed and in your PATH."
+            )
+
+        try:
+            _run_command(
+                ["module", "load", f"{pipeline_name}/{pipeline_version}"],
+                check=True,
+            )
+        except subprocess.CalledProcessError as exception:
+            logger.warning(
+                f"Failed to load module {pipeline_name}/{pipeline_version}: "
+                f"{exception}. Assuming that the correct module has been loaded"
+                " and that the executable is available in the PATH."
+            )
 
 
 def get_container_handler(config: ContainerConfig) -> ContainerHandler:

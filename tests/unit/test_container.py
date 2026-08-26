@@ -1,8 +1,8 @@
 """Tests for container option handlers."""
 
 import logging
+import subprocess
 from pathlib import Path
-from typing import Type
 
 import pytest
 import pytest_mock
@@ -13,10 +13,11 @@ from nipoppy.container import (
     BareMetalHandler,
     ContainerHandler,
     DockerHandler,
+    LmodHandler,
     SingularityHandler,
     get_container_handler,
 )
-from nipoppy.exceptions import ContainerError
+from nipoppy.exceptions import ContainerError, FileOperationError
 
 
 class _TestHandler(ContainerHandler):
@@ -32,7 +33,7 @@ class _TestHandler(ContainerHandler):
         return "not_used"
 
     def get_pull_command(self, uri, fpath_container):
-        return "not_used"
+        return "some command"
 
 
 @pytest.fixture
@@ -44,7 +45,7 @@ def handler() -> ContainerHandler:
     "subclass",
     [ApptainerHandler, SingularityHandler, DockerHandler],
 )
-def test_subclass(subclass: Type[ContainerHandler]):
+def test_subclass(subclass: type[ContainerHandler]):
     # try to instantiate subclass
     handler = subclass()
     assert isinstance(handler, ContainerHandler)
@@ -220,7 +221,7 @@ def test_add_env_arg(handler: ContainerHandler):
                 args=["--volume", ".:/container/path:ro", "--env", "VAR2=value"]
             ),
             "run",
-            f"docker run --volume {Path('.').resolve()}:/container/path:ro --env VAR2=value",  # noqa: E501
+            f"docker run --volume {Path.cwd()}:/container/path:ro --env VAR2=value",  # noqa: E501
         ),
     ],
 )
@@ -395,6 +396,96 @@ def test_get_pull_command_error(
         handler.get_pull_command(uri, fpath_container)
 
 
+def test_check_execution_prerequisites_passes_if_image_downloaded(
+    handler: ContainerHandler,
+    mocker: pytest_mock.MockerFixture,
+):
+    uri = "docker://test/test:latest"
+    fpath_container = "path/to/container.sif"
+    mocked_is_image_downloaded = mocker.patch.object(
+        handler, "is_image_downloaded", return_value=True
+    )
+    handler.check_execution_prerequisites(
+        "my_pipeline", "1.0", uri=uri, fpath_container=fpath_container
+    )
+    mocked_is_image_downloaded.assert_called_once_with(uri, fpath_container)
+
+
+@pytest.mark.parametrize(
+    "uri,fpath_container,expected_error_message",
+    [
+        (
+            None,
+            "does_not_exist.sif",
+            "No container image file found for pipeline my_pipeline 1.0$",
+        ),
+        (
+            "docker://test/test:latest",
+            "does_not_exist.sif",
+            "No container image file found for pipeline .*This file can be downloaded",
+        ),
+    ],
+)
+def test_check_execution_prerequisites_raises_if_image_not_downloaded(
+    uri: str,
+    fpath_container: Path,
+    expected_error_message: str,
+    handler: ContainerHandler,
+    mocker: pytest_mock.MockerFixture,
+):
+    mocker.patch.object(handler, "is_image_downloaded", return_value=False)
+    with pytest.raises(FileOperationError, match=expected_error_message):
+        handler.check_execution_prerequisites(
+            "my_pipeline", "1.0", uri=uri, fpath_container=fpath_container
+        )
+
+
+def test_check_execution_prerequisites_lmod_raises_if_lmod_not_available(
+    mocker: pytest_mock.MockerFixture,
+):
+    handler = LmodHandler()
+
+    uri = "not_used"
+    fpath_container = "not_used"
+
+    mocker.patch("nipoppy.container.shutil.which", return_value=None)
+
+    with pytest.raises(ContainerError, match="Lmod is not available on this system."):
+        handler.check_execution_prerequisites(
+            "my_pipeline", "1.0", uri=uri, fpath_container=fpath_container
+        )
+
+
+def test_check_execution_prerequisites_lmod_warns_if_module_load_failed(
+    mocker: pytest_mock.MockerFixture,
+    caplog: pytest.LogCaptureFixture,
+):
+    handler = LmodHandler()
+
+    pipeline_name = "my_pipeline"
+    pipeline_version = "1.0"
+    uri = "not_used"
+    fpath_container = "not_used"
+
+    mocker.patch("nipoppy.container.shutil.which", return_value="/path/to/module")
+    mocked_run_command = mocker.patch(
+        "nipoppy.container._run_command",
+        side_effect=subprocess.CalledProcessError(1, "module load test_module/version"),
+    )
+
+    handler.check_execution_prerequisites(
+        pipeline_name, pipeline_version, uri=uri, fpath_container=fpath_container
+    )
+
+    mocked_run_command.assert_called_once_with(
+        ["module", "load", f"{pipeline_name}/{pipeline_version}"], check=True
+    )
+    assert any(
+        "Failed to load module" in record.message and record.levelname == "WARNING"
+        for record in caplog.records
+    )
+
+
 @pytest.mark.parametrize(
     "config,expected",
     [
@@ -476,18 +567,24 @@ def test_get_container_handler_error():
     [
         (
             ApptainerHandler(),
-            "This pipeline is containerized: do you want to download the container "
-            "(to [magenta]{fpath_container}[/])?",
+            (
+                "This pipeline is containerized: do you want to download the container "
+                "(to [magenta]{fpath_container}[/])?"
+            ),
         ),
         (
             SingularityHandler(),
-            "This pipeline is containerized: do you want to download the container "
-            "(to [magenta]{fpath_container}[/])?",
+            (
+                "This pipeline is containerized: do you want to download the container "
+                "(to [magenta]{fpath_container}[/])?"
+            ),
         ),
         (
             DockerHandler(),
-            "This pipeline is containerized: do you want to download the container "
-            "locally?",
+            (
+                "This pipeline is containerized: do you want to download the container "
+                "locally?"
+            ),
         ),
     ],
 )

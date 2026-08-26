@@ -35,6 +35,8 @@ def extractor(tmp_path: Path) -> ExtractionRunner:
     )
     extractor.study.config = get_config()
     create_empty_dataset(extractor.dpath_root)
+    container_image_path = tmp_path / "container.sif"
+    container_image_path.touch()
     create_pipeline_config_files(
         extractor.study.layout.dpath_pipelines,
         processing_pipelines=[
@@ -51,6 +53,9 @@ def extractor(tmp_path: Path) -> ExtractionRunner:
             {
                 "NAME": "fs_extractor",
                 "VERSION": "2.0.0",
+                "CONTAINER_INFO": {
+                    "FILE": str(container_image_path),
+                },
                 "PROC_DEPENDENCIES": [
                     {
                         "NAME": "freesurfer",

@@ -481,7 +481,7 @@ class LmodHandler(BareMetalHandler):
         fpath_container: StrOrPathLike | None,
     ):
         """Attempt to load the module associated with the module."""
-        if not shutil.which("module"):
+        if os.environ.get("LMOD_CMD") is None:
             raise ContainerError(
                 "Lmod is not available on this system."
                 " Make sure it is installed and in your PATH."

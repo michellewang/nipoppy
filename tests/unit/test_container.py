@@ -470,15 +470,31 @@ def test_check_execution_prerequisites_raises_if_image_not_downloaded(
         )
 
 
-def test_check_execution_prerequisites_lmod_raises_if_lmod_not_available(
-    mocker: pytest_mock.MockerFixture,
+def test_check_execution_prerequisites_lmod_passes_if_lmod_available(
+    monkeypatch: pytest.MonkeyPatch, mocker: pytest_mock.MockerFixture
 ):
     handler = LmodHandler()
 
     uri = "not_used"
     fpath_container = "not_used"
 
-    mocker.patch("nipoppy.container.shutil.which", return_value=None)
+    monkeypatch.setenv("LMOD_CMD", "/path/to/executable")
+    mocker.patch("nipoppy.container._run_command")
+
+    handler.check_execution_prerequisites(
+        "my_pipeline", "1.0", uri=uri, fpath_container=fpath_container
+    )
+
+
+def test_check_execution_prerequisites_lmod_raises_if_lmod_not_available(
+    monkeypatch: pytest.MonkeyPatch,
+):
+    handler = LmodHandler()
+
+    uri = "not_used"
+    fpath_container = "not_used"
+
+    monkeypatch.delenv("LMOD_CMD", raising=False)
 
     with pytest.raises(ContainerError, match="Lmod is not available on this system."):
         handler.check_execution_prerequisites(
@@ -487,6 +503,7 @@ def test_check_execution_prerequisites_lmod_raises_if_lmod_not_available(
 
 
 def test_check_execution_prerequisites_lmod_warns_if_module_load_failed(
+    monkeypatch: pytest.MonkeyPatch,
     mocker: pytest_mock.MockerFixture,
     caplog: pytest.LogCaptureFixture,
 ):
@@ -497,7 +514,7 @@ def test_check_execution_prerequisites_lmod_warns_if_module_load_failed(
     uri = "not_used"
     fpath_container = "not_used"
 
-    mocker.patch("nipoppy.container.shutil.which", return_value="/path/to/module")
+    monkeypatch.setenv("LMOD_CMD", "/path/to/executable")
     mocked_run_command = mocker.patch(
         "nipoppy.container._run_command",
         side_effect=subprocess.CalledProcessError(1, "module load test_module/version"),

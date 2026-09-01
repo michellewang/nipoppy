@@ -62,6 +62,7 @@ class ContainerCommandEnum(str, Enum):
     APPTAINER = "apptainer"
     DOCKER = "docker"
     SINGULARITY = "singularity"
+    LMOD = "lmod"
 
 
 class PipelineTypeEnum(str, Enum):

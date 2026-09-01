@@ -128,6 +128,36 @@ def test_add_bind_arg(
 
 
 @pytest.mark.parametrize(
+    "path_src,path_dest",
+    [
+        ("/absolute/path", "/absolute/path"),
+        (Path("/absolute/path"), Path("/absolute/path")),
+        (Path("/absolute/path"), "/absolute/path"),
+        ("/absolute/path", None),
+    ],
+)
+def test_add_bind_arg_baremetal(path_src, path_dest):
+    handler = BareMetalHandler()
+
+    handler.add_bind_arg(path_src, path_dest)
+
+
+def test_add_bind_arg_baremetal_error_if_src_dest_different():
+    handler = BareMetalHandler()
+    with pytest.raises(
+        ContainerError,
+        match=(
+            "The container configuration contains bind paths with "
+            "different source and destination paths"
+        ),
+    ):
+        handler.add_bind_arg(
+            path_src="/my/local/path",
+            path_dest="/my/container/path",
+        )
+
+
+@pytest.mark.parametrize(
     "args",
     [
         [],

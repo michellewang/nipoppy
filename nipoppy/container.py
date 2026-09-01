@@ -58,7 +58,7 @@ class ContainerHandler(Base, ABC):
         self,
         path_src: StrOrPathLike,
         path_dest: StrOrPathLike | None = None,
-        mode: str | None = "rw",
+        mode: str = "rw",
     ):
         """Add a bind path to the container args.
 
@@ -79,8 +79,7 @@ class ContainerHandler(Base, ABC):
 
         bind_spec_components = [str(path_src)]
         bind_spec_components.append(str(path_dest))
-        if mode is not None:
-            bind_spec_components.append(mode)
+        bind_spec_components.append(mode)
 
         self.args.extend(
             [
@@ -413,13 +412,23 @@ class BareMetalHandler(ContainerHandler):
         self,
         path_src: StrOrPathLike,
         path_dest: StrOrPathLike | None = None,
-        mode: str | None = "rw",
+        mode: str = "rw",
     ):
-        """
-        Add a bind path to the container args.
-
-        Does not do anything since this is bare metal execution.
-        """
+        """Raise an error if path_src and path_dest do not match."""
+        if path_dest is None:
+            return
+        if Path(path_src) != Path(path_dest):
+            raise ContainerError(
+                (
+                    "The container configuration contains bind paths with different "
+                    f"source and destination paths: {path_src} -> {path_dest}, "
+                    "which is not supported for this runtime."
+                ),
+                hint=(
+                    "Remove the bind path from the CONTAINER_CONFIG in question"
+                    " and use the source path directly in the invocation file."
+                ),
+            )
 
     @override
     def add_env_arg(self, key: str, value: str):
@@ -497,6 +506,7 @@ def get_container_handler(config: ContainerConfig) -> ContainerHandler:
         ContainerCommandEnum.APPTAINER: ApptainerHandler,
         ContainerCommandEnum.SINGULARITY: SingularityHandler,
         ContainerCommandEnum.DOCKER: DockerHandler,
+        ContainerCommandEnum.LMOD: LmodHandler,
         None: BareMetalHandler,
     }
 
